@@ -1,5 +1,5 @@
 // här är det bara level-up!
-import { name, themes } from "../variables.js";
+import { name, themes } from "../models/variables.js";
 
 const nameInput = document.getElementById("name-input") as HTMLInputElement;
 nameInput.value = name;
@@ -20,3 +20,5 @@ logOutBtn?.addEventListener("click", logOut);
 function logOut(): void {
     window.location.replace('login.html');
 };
+
+// lägg till hantering av teman

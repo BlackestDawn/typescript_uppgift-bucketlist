@@ -1,9 +1,4 @@
-interface Dream {
-    id: number,
-    name: string,
-    theme: string,
-    checked: boolean
-}
+import { Dream } from "./types.js";
 
 export const themes = ["teknikdrömmar", "vardagsdrömmar", "husdrömmar", "sportdrömmar", "resdrömmar"];
 export let name = "NAMN";
