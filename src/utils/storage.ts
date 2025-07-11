@@ -1,3 +1,7 @@
+import { Dreams, Themes } from "../models/types.js";
+import { defaultThemes } from "../models/variables.js";
+import { testDreams } from "../models/variables.js";
+
 export function storeUser(username: string, password: string, remember?: boolean) {
   if (remember) {
     localStorage.setItem("bucket-list-username", username);
@@ -35,4 +39,32 @@ export function changeUsername(newUsername: string) {
   } else {
     sessionStorage.setItem("bucket-list-username", newUsername);
   }
+}
+
+export function storeDreams(dreams: Dreams) {
+  const user = getUser();
+  if (!user) return;
+  localStorage.setItem(`bucket-list-dreams-${user}`, JSON.stringify(dreams));
+}
+
+export function getDreams(): Dreams {
+  const user = getUser();
+  if (!user) return [];
+  const dreams = localStorage.getItem(`bucket-list-dreams-${user}`);
+  if (dreams) {
+    return JSON.parse(dreams);
+  }
+  return testDreams;
+}
+
+export function storeThemes(themes: Themes) {
+  localStorage.setItem("bucket-list-themes", JSON.stringify(themes));
+}
+
+export function getThemes(): Themes {
+  const themes = localStorage.getItem("bucket-list-themes");
+  if (themes) {
+    return JSON.parse(themes);
+  }
+  return defaultThemes;
 }

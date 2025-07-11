@@ -1,10 +1,10 @@
-import { Dream } from "./types.js";
+import { Dreams, Themes } from "./types.js";
 
-export let themes = ["teknikdrömmar", "vardagsdrömmar", "husdrömmar", "sportdrömmar", "resdrömmar"];
+export const defaultThemes: Themes = ["teknikdrömmar", "vardagsdrömmar", "husdrömmar", "sportdrömmar", "resdrömmar"];
 export const defaultName = "NAMN";
 export const minPasswordLength = 4;
 
-export const dreams: Dream[] = [{
+export const testDreams: Dreams = [{
     id: 1,
     name: "Lära mig HTML/CSS",
     theme: "teknikdrömmar",
