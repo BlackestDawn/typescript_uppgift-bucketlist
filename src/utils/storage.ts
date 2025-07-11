@@ -1,6 +1,5 @@
 import { Dreams, Themes } from "../models/types.js";
 import { defaultThemes } from "../models/variables.js";
-import { testDreams } from "../models/variables.js";
 
 export function storeUser(username: string, password: string, remember?: boolean) {
   if (remember) {
@@ -62,7 +61,7 @@ export function getDreams(): Dreams {
   if (dreams) {
     return JSON.parse(dreams);
   }
-  return testDreams;
+  return [];
 }
 
 export function moveDreams(oldUser: string, newUser: string) {
@@ -105,4 +104,17 @@ export function removeThemes() {
   const user = getUser();
   if (!user) return;
   localStorage.removeItem(`bucket-list-themes-${user}`);
+}
+
+export function removeThemeByIndex(index: number) {
+  const themes = getThemes();
+  const dreams = getDreams();
+  const removedTheme = themes[index];
+  dreams.forEach(dream => {
+    if (dream.theme === removedTheme) {
+      dream.theme = "-";
+    }
+  });
+  themes.splice(index, 1);
+  storeThemes(themes);
 }

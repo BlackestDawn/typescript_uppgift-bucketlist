@@ -2,7 +2,7 @@
 import { defaultName, defaultThemes as themes } from "../models/variables.js";
 import { getUser, changeUsername, logoutUser } from "../utils/storage.js";
 import { elementNullCheck } from "../utils/domHelpers.js";
-import { moveDreams, getThemes, storeThemes, moveThemes } from "../utils/storage.js";
+import { moveDreams, getThemes, storeThemes, moveThemes, removeThemeByIndex } from "../utils/storage.js";
 
 window.addEventListener('DOMContentLoaded', () => {
   const nameInput = elementNullCheck<HTMLInputElement>("#name-input");
@@ -66,8 +66,6 @@ function handlerDeleteTheme(event: Event): void {
   if (!button) return;
   const index = parseInt(button.id.split("-")[1]);
   if (isNaN(index)) return;
-  const themes = getThemes();
-  themes.splice(index, 1);
-  storeThemes(themes);
+  removeThemeByIndex(index);
   renderThemeList();
 }
