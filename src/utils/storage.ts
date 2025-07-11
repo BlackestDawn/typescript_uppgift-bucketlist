@@ -1,21 +1,38 @@
-export function storeUser(username: string, password: string) {
-  sessionStorage.setItem("username", username);
-  sessionStorage.setItem("password", password);
+export function storeUser(username: string, password: string, remember?: boolean) {
+  if (remember) {
+    localStorage.setItem("bucket-list-username", username);
+    localStorage.setItem("bucket-list-password", password);
+    return;
+  }
+  sessionStorage.setItem("bucket-list-username", username);
+  sessionStorage.setItem("bucket-list-password", password);
 }
 
 export function getUser(): string | null {
-  return sessionStorage.getItem("username");
+  if (localStorage.getItem("bucket-list-username")) {
+    return localStorage.getItem("bucket-list-username");
+  }
+  return sessionStorage.getItem("bucket-list-username");
 }
 
 export function getPassword(): string | null {
-  return sessionStorage.getItem("password");
+  if (localStorage.getItem("bucket-list-password")) {
+    return localStorage.getItem("bucket-list-password");
+  }
+  return sessionStorage.getItem("bucket-list-password");
 }
 
 export function removeUser() {
-  sessionStorage.removeItem("username");
-  sessionStorage.removeItem("password");
+  localStorage.removeItem("bucket-list-username");
+  localStorage.removeItem("bucket-list-password");
+  sessionStorage.removeItem("bucket-list-username");
+  sessionStorage.removeItem("bucket-list-password");
 }
 
 export function changeUsername(newUsername: string) {
-  sessionStorage.setItem("username", newUsername);
+  if (localStorage.getItem("bucket-list-username")) {
+    localStorage.setItem("bucket-list-username", newUsername);
+  } else {
+    sessionStorage.setItem("bucket-list-username", newUsername);
+  }
 }

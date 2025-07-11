@@ -12,10 +12,14 @@ loginButton.addEventListener("click", () => {
   const passwordInput = elementNullCheck<HTMLInputElement>("#password");
   const password = passwordInput.value;
 
+  const remeberInput = elementNullCheck<HTMLInputElement>("#remember");
+  const remember = remeberInput.checked;
+
+
   if (!validatePassword(password) || !validateUsername(username)) {
     alert("Invalid username or password.");
     return;
   }
-  storeUser(username, password);
+  storeUser(username, password, remember);
   window.location.replace("dashboard.html");
 });
