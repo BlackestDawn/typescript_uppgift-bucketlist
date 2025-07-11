@@ -1,6 +1,6 @@
 // när användaren kommer in på sidan (DOMen laddats in), ska den omdirigeras till index.html eller dashboard.html
 // beroende på om de klickat i "Kom ihåg mig"
-import { getUser } from "../utils/storage";
+import { getUser } from "../utils/storage.js";
 
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
