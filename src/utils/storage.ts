@@ -26,11 +26,19 @@ export function getPassword(): string | null {
   return sessionStorage.getItem("bucket-list-password");
 }
 
-export function removeUser() {
+export function logoutUser() {
+  const user = getUser();
+  if (!user) return;
   localStorage.removeItem("bucket-list-username");
   localStorage.removeItem("bucket-list-password");
   sessionStorage.removeItem("bucket-list-username");
   sessionStorage.removeItem("bucket-list-password");
+}
+
+export function removeUser() {
+  logoutUser();
+  removeDreams();
+  removeThemes();
 }
 
 export function changeUsername(newUsername: string) {
@@ -57,14 +65,44 @@ export function getDreams(): Dreams {
   return testDreams;
 }
 
+export function moveDreams(oldUser: string, newUser: string) {
+  const oldDreams = localStorage.getItem(`bucket-list-dreams-${oldUser}`);
+  if (!oldDreams) return;
+  localStorage.setItem(`bucket-list-dreams-${newUser}`, oldDreams);
+  localStorage.removeItem(`bucket-list-dreams-${oldUser}`);
+}
+
+export function removeDreams() {
+  const user = getUser();
+  if (!user) return;
+  localStorage.removeItem(`bucket-list-dreams-${user}`);
+}
+
 export function storeThemes(themes: Themes) {
-  localStorage.setItem("bucket-list-themes", JSON.stringify(themes));
+  const user = getUser();
+  if (!user) return;
+  localStorage.setItem(`bucket-list-themes-${user}`, JSON.stringify(themes));
 }
 
 export function getThemes(): Themes {
-  const themes = localStorage.getItem("bucket-list-themes");
+  const user = getUser();
+  if (!user) return defaultThemes;
+  const themes = localStorage.getItem(`bucket-list-themes-${user}`);
   if (themes) {
     return JSON.parse(themes);
   }
   return defaultThemes;
+}
+
+export function moveThemes(oldUser: string, newUser: string) {
+  const oldThemes = localStorage.getItem(`bucket-list-themes-${oldUser}`);
+  if (!oldThemes) return;
+  localStorage.setItem(`bucket-list-themes-${newUser}`, oldThemes);
+  localStorage.removeItem(`bucket-list-themes-${oldUser}`);
+}
+
+export function removeThemes() {
+  const user = getUser();
+  if (!user) return;
+  localStorage.removeItem(`bucket-list-themes-${user}`);
 }
