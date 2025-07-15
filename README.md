@@ -12,7 +12,7 @@ npx tsc
 
 ## Användning
 
-Use an existing webserver or VSCode's Live server/preview to view the pages.
+Använd VSCode's Live server/preview för att se websidan.
 
 ## Struktur
 ```
