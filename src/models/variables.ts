@@ -12,22 +12,23 @@ export const defaultName = "NAMN";
 export const minPasswordLength = 4;
 export const defaultThemeOption = "-- Välj ett tema --";
 
-export const defaultDreams: Dream[] = [{
+export const defaultDreams: Dream[] = [
+  {
     id: 1,
     name: "Lära mig HTML/CSS",
     themeId: 1,
     checked: true
-},
-{
+  },
+  {
     id: 2,
     name: "Lära mig TypeScript",
     themeId: 1,
     checked: false
-},
-{
+  },
+  {
     id: 3,
     name: "En dröm som tar flera rader lorem ipsum",
     themeId: 2,
     checked: false
-}
+  }
 ];
