@@ -1,59 +1,57 @@
-import { elementNullCheck } from "../utils/domHelpers.js";
-import { Dreams, Dream } from "../models/types.js";
-import { getUser, getDreams, storeDreams, getThemes } from "../utils/storage.js";
-import { defaultThemeOption } from "../models/variables.js";
+import { getHTMLElement } from "../utils/domHelpers.js";
+import { Dream, Theme } from "../models/types.js";
+import { save, load } from "../utils/storage.js";
+import { defaultThemeOption, defaultThemes } from "../models/variables.js";
 import { showExisting } from "../utils/notification.js";
+import { checkLoggedInUser, setDisplayName, getNewId } from "../utils/helpers.js";
 
 window.addEventListener('DOMContentLoaded', () => {
-  const user = getUser();
-  const userField = elementNullCheck<HTMLSpanElement>("#user-name");
-  userField.textContent = user;
+  checkLoggedInUser();
+  setDisplayName(getHTMLElement<HTMLSpanElement>("#user-name"));
 
   populateThemeSelection();
 
-  const addDreamButton = elementNullCheck<HTMLButtonElement>("#add-dream");
+  const addDreamButton = getHTMLElement<HTMLButtonElement>("#add-dream");
   addDreamButton.addEventListener("click", handleAddDream);
 });
 
 function populateThemeSelection() {
-  const themeSelection = elementNullCheck<HTMLSelectElement>("#dream-select");
-  const themes = getThemes();
+  const themeSelection = getHTMLElement<HTMLSelectElement>("#dream-select");
+  const themes = load<Theme>("themes") as Theme[] || defaultThemes;
   const topOption = document.createElement("option");
   topOption.value = "";
   topOption.text = defaultThemeOption;
 
   themeSelection.replaceChildren(topOption, ...themes.map(theme => {
     const option = document.createElement("option");
-    option.value = theme;
-    option.text = theme;
+    option.value = theme.id.toString();
+    option.text = theme.name;
     return option;
   }));
 }
 
 function handleAddDream() {
-  const dreamName = elementNullCheck<HTMLInputElement>("#dream").value;
+  const dreamName = getHTMLElement<HTMLInputElement>("#dream").value;
   if (!dreamName || dreamName === "") {
-    const dreamNameError = elementNullCheck<HTMLDivElement>("#dream-error-message");
+    const dreamNameError = getHTMLElement<HTMLDivElement>("#dream-error-message");
     showExisting(dreamNameError);
     return;
   }
-  const dreamTheme = elementNullCheck<HTMLSelectElement>("#dream-select").value;
+  const dreamTheme = getHTMLElement<HTMLSelectElement>("#dream-select").value;
   if (!dreamTheme || dreamTheme === "") {
-    const dreamThemeError = elementNullCheck<HTMLDivElement>("#theme-error-message");
+    const dreamThemeError = getHTMLElement<HTMLDivElement>("#theme-error-message");
     showExisting(dreamThemeError);
     return;
   }
 
-  const dreams: Dreams = getDreams();
-  const highestId = dreams.reduce((max, dream) => Math.max(max, dream.id), 0);
+  const highestId = getNewId<Dream>("dreams");
   const newDream: Dream = {
     id: highestId + 1,
     name: dreamName,
-    theme: dreamTheme,
+    themeId: parseInt(dreamTheme),
     checked: false
   };
-  dreams.push(newDream);
-  storeDreams(dreams);
-  window.location.replace("dashboard.html");
+  save('dreams', newDream);
+  window.location.href = "dashboard.html";
 }
 

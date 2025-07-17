@@ -1,120 +1,55 @@
-import { Dreams, Themes } from "../models/types.js";
-import { defaultThemes } from "../models/variables.js";
+import {StorageTypes, ItemWithId, User } from "../models/types.js";
+import { getCurrentUserId } from "./helpers.js";
 
-export function storeUser(username: string, password: string, remember?: boolean) {
-  if (remember) {
-    localStorage.setItem("bucket-list-username", username);
-    localStorage.setItem("bucket-list-password", password);
-    return;
-  }
-  sessionStorage.setItem("bucket-list-username", username);
-  sessionStorage.setItem("bucket-list-password", password);
-}
+export function save<T extends ItemWithId>(key: StorageTypes, data: T | T[]): void {
+  const currentUser = getCurrentUserId();
+  if (!currentUser) throw new Error('No current user found');
 
-export function getUser(): string | null {
-  if (localStorage.getItem("bucket-list-username")) {
-    return localStorage.getItem("bucket-list-username");
-  }
-  return sessionStorage.getItem("bucket-list-username");
-}
-
-export function getPassword(): string | null {
-  if (localStorage.getItem("bucket-list-password")) {
-    return localStorage.getItem("bucket-list-password");
-  }
-  return sessionStorage.getItem("bucket-list-password");
-}
-
-export function logoutUser() {
-  const user = getUser();
-  if (!user) return;
-  localStorage.removeItem("bucket-list-username");
-  localStorage.removeItem("bucket-list-password");
-  sessionStorage.removeItem("bucket-list-username");
-  sessionStorage.removeItem("bucket-list-password");
-}
-
-export function removeUser() {
-  logoutUser();
-  removeDreams();
-  removeThemes();
-}
-
-export function changeUsername(newUsername: string) {
-  if (localStorage.getItem("bucket-list-username")) {
-    localStorage.setItem("bucket-list-username", newUsername);
+  const storageKey = key !== 'users' ? `${key}_${currentUser}` : key;
+  if (Array.isArray(data)) {
+    localStorage.setItem(storageKey, JSON.stringify(data));
   } else {
-    sessionStorage.setItem("bucket-list-username", newUsername);
+    const existingData = localStorage.getItem(storageKey);
+    let items: T[] = existingData ? JSON.parse(existingData) : [];
+    items = items.filter(item => item.id !== data.id);
+    items.push(data);
+    localStorage.setItem(storageKey, JSON.stringify(items.sort((a, b) => a.id - b.id)));
   }
 }
 
-export function storeDreams(dreams: Dreams) {
-  const user = getUser();
-  if (!user) return;
-  localStorage.setItem(`bucket-list-dreams-${user}`, JSON.stringify(dreams));
-}
+export function load<T extends ItemWithId>(key: StorageTypes, id?: number): T | T[] | null {
+  const currentUser = getCurrentUserId();
+  if (!currentUser) return null;
 
-export function getDreams(): Dreams {
-  const user = getUser();
-  if (!user) return [];
-  const dreams = localStorage.getItem(`bucket-list-dreams-${user}`);
-  if (dreams) {
-    return JSON.parse(dreams);
+  const storageKey = key !== 'users' ? `${key}_${currentUser}` : key;
+  const data = localStorage.getItem(storageKey);
+  if (!data) {
+    return null;
   }
-  return [];
-}
 
-export function moveDreams(oldUser: string, newUser: string) {
-  const oldDreams = localStorage.getItem(`bucket-list-dreams-${oldUser}`);
-  if (!oldDreams) return;
-  localStorage.setItem(`bucket-list-dreams-${newUser}`, oldDreams);
-  localStorage.removeItem(`bucket-list-dreams-${oldUser}`);
-}
-
-export function removeDreams() {
-  const user = getUser();
-  if (!user) return;
-  localStorage.removeItem(`bucket-list-dreams-${user}`);
-}
-
-export function storeThemes(themes: Themes) {
-  const user = getUser();
-  if (!user) return;
-  localStorage.setItem(`bucket-list-themes-${user}`, JSON.stringify(themes));
-}
-
-export function getThemes(): Themes {
-  const user = getUser();
-  if (!user) return defaultThemes;
-  const themes = localStorage.getItem(`bucket-list-themes-${user}`);
-  if (themes) {
-    return JSON.parse(themes);
+  const parsedData: T[] = JSON.parse(data);
+  if (id !== undefined) {
+    return parsedData.find(item => item.id === id) || null;
   }
-  return defaultThemes;
+  return parsedData;
 }
 
-export function moveThemes(oldUser: string, newUser: string) {
-  const oldThemes = localStorage.getItem(`bucket-list-themes-${oldUser}`);
-  if (!oldThemes) return;
-  localStorage.setItem(`bucket-list-themes-${newUser}`, oldThemes);
-  localStorage.removeItem(`bucket-list-themes-${oldUser}`);
-}
+export function remove<T extends ItemWithId>(key: StorageTypes, id?: number): void {
+  const currentUser = getCurrentUserId();
+  if (!currentUser) return
 
-export function removeThemes() {
-  const user = getUser();
-  if (!user) return;
-  localStorage.removeItem(`bucket-list-themes-${user}`);
-}
-
-export function removeThemeByIndex(index: number) {
-  const themes = getThemes();
-  const dreams = getDreams();
-  const removedTheme = themes[index];
-  dreams.forEach(dream => {
-    if (dream.theme === removedTheme) {
-      dream.theme = "-";
+  const storageKey = key !== 'users' ? `${key}_${currentUser}` : key;
+  if (id !== undefined) {
+    const data = localStorage.getItem(storageKey);
+    if (!data) return;
+    let items: T[] = JSON.parse(data);
+    items = items.filter(item => item.id !== id);
+    if (items.length === 0) {
+      localStorage.removeItem(storageKey);
+    } else {
+      localStorage.setItem(storageKey, JSON.stringify(items));
     }
-  });
-  themes.splice(index, 1);
-  storeThemes(themes);
+  } else {
+    localStorage.removeItem(storageKey);
+  }
 }

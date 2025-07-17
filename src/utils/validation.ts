@@ -1,18 +1,18 @@
 import { minPasswordLength } from "../models/variables.js";
+import { User } from "../models/types.js";
+import { InvalidPasswordError, InvalidUsernameError, InvalidCredentialsError } from "../models/types.js";
 
-export function validateUsername(username: string): string {
-  if (!username || username === "") {
-    return "Username cannot be empty.";
+export function validateUser(user: User, existing?: User | null) {
+  if (!user.username) {
+    throw new InvalidUsernameError("Användarnamn kan inte vara tomt.");
   }
-  return "";
-}
-
-export function validatePassword(password: string): string {
-  if (!password || password === "") {
-    return "Password cannot be empty.";
+  if (!user.password) {
+    throw new InvalidPasswordError("Lösenord kan inte vara tomt.");
   }
-  if (password.length < minPasswordLength) {
-    return `Password must be at least ${minPasswordLength} characters long.`;
+  if (user.password.length < minPasswordLength) {
+    throw new InvalidPasswordError(`Lösenord måste vara minst ${minPasswordLength} tecken långt.`);
   }
-  return "";
+  if (existing && (existing.username !== user.username || existing.password !== user.password)) {
+    throw new InvalidCredentialsError("Ogiltigt användarnamn eller lösenord.");
+  }
 }

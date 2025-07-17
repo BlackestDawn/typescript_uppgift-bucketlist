@@ -1,41 +1,67 @@
-import { elementNullCheck } from "../utils/domHelpers.js"
-import { validateUsername, validatePassword } from "../utils/validation.js"
-import { storeUser } from "../utils/storage.js"
+import { getHTMLElement } from "../utils/domHelpers.js"
+import { validateUser } from "../utils/validation.js"
+import { save } from "../utils/storage.js"
+import { setCurrentUser, getUserByUsername, getNewId, checkLoggedInUser } from "../utils/helpers.js";
 import { showExisting } from "../utils/notification.js";
+import { User, InvalidUsernameError, InvalidPasswordError, InvalidCredentialsError } from "../models/types.js";
+import { defaultThemes } from "../models/variables.js";
 
-const loginButton = elementNullCheck<HTMLButtonElement>("#login");
+const loginButton = getHTMLElement<HTMLButtonElement>("#login");
 loginButton.addEventListener("click", () => {
-  const usernameInput = elementNullCheck<HTMLInputElement>("#username");
+  const usernameInput = getHTMLElement<HTMLInputElement>("#username");
   const username = usernameInput.value;
 
-  const passwordInput = elementNullCheck<HTMLInputElement>("#password");
+  const passwordInput = getHTMLElement<HTMLInputElement>("#password");
   const password = passwordInput.value;
 
-  const remeberInput = elementNullCheck<HTMLInputElement>("#remember");
-  const remember = remeberInput.checked;
+  const rememberInput = getHTMLElement<HTMLInputElement>("#remember");
+  const remember = rememberInput.checked;
 
+  const existingUser = getUserByUsername(username);
+  const newId = getNewId<User>("users");
 
-  if (validatePassword(password) !== "") {
-    const passwordError = elementNullCheck<HTMLDivElement>("#password-error-message");
-    showExisting(passwordError);
-    return;
+  const user: User = {
+    id: existingUser ? existingUser.id : newId + 1,
+    username,
+    password
+  };
+
+  try {
+    validateUser(user, existingUser);
+    setCurrentUser(user, remember);
+    save('users', user);
+    if (!existingUser) save('themes', defaultThemes);
+    window.location.href = "dashboard.html";
+  } catch (error) {
+    if (error instanceof InvalidUsernameError) {
+      const errorElement = getHTMLElement<HTMLDivElement>("#username-error-message");
+      errorElement.textContent = (error as Error).message;
+      showExisting(errorElement);
+    }
+    if (error instanceof InvalidPasswordError) {
+      const errorElement = getHTMLElement<HTMLDivElement>("#password-error-message");
+      errorElement.textContent = (error as Error).message;
+      showExisting(errorElement);
+    }
+    if (error instanceof InvalidCredentialsError) {
+      const errorElement = getHTMLElement<HTMLDivElement>("#login-error-message");
+      errorElement.textContent = (error as Error).message;
+      showExisting(errorElement);
+    }
   }
-  if (validateUsername(username) !== "") {
-    const usernameError = elementNullCheck<HTMLDivElement>("#username-error-message");
-    showExisting(usernameError);
-    return;
-  }
-  storeUser(username, password, remember);
-  window.location.replace("dashboard.html");
 });
 
-const togglePasswordButton = elementNullCheck<HTMLButtonElement>("#toggle-password");
+const togglePasswordButton = getHTMLElement<HTMLButtonElement>("#toggle-password");
 togglePasswordButton.addEventListener("click", () => {
-  const passwordInput = elementNullCheck<HTMLInputElement>("#password");
+  const passwordInput = getHTMLElement<HTMLInputElement>("#password");
   const currentType = passwordInput.type;
   if (currentType === "password") {
     passwordInput.type = "text";
   } else {
     passwordInput.type = "password";
   }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  checkLoggedInUser();
 });

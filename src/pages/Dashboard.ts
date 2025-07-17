@@ -1,14 +1,15 @@
-import { getUser } from "../utils/storage.js";
-import { elementNullCheck } from "../utils/domHelpers.js";
-import { Dream, Dreams } from "../models/types.js";
-import { getDreams, storeDreams } from "../utils/storage.js";
+import { checkLoggedInUser, setDisplayName } from "../utils/helpers.js";
+import { getHTMLElement } from "../utils/domHelpers.js";
+import { Dream, Theme } from "../models/types.js";
+import { save, load, remove } from "../utils/storage.js";
 
 function buildListItem(dream: Dream) {
   const item = document.createElement("li");
   item.classList.add("dream-list_item");
+  const theme = load<Theme>('themes', dream.themeId) as Theme;
   item.innerHTML = `
     <input class="dream-check" type="checkbox" name="dream-check" id="dream-check-${dream.id}" ${dream.checked ? "checked" : ""}>
-    <label for="dream-check-${dream.id}">${dream.name}, <span class="dream-theme">${dream.theme}</span></label>
+    <label for="dream-check-${dream.id}">${dream.name}, <span class="dream-theme">${theme.name || "Unknown dream type"}</span></label>
     <button type="button" id="dream-delete-${dream.id}"><img src="../assets/images/trash_delete.png"></button>
     `;
 
@@ -16,14 +17,18 @@ function buildListItem(dream: Dream) {
 }
 
 function renderDreamList() {
-  const dreamList = elementNullCheck<HTMLUListElement>(".dream-list");
+  const dreamList = getHTMLElement<HTMLUListElement>(".dream-list");
   if (!dreamList) return;
-  const dreams: Dreams = getDreams();
-  ;
-  if (!dreams) return;
-  dreamList.addEventListener("click", handleDreamInteraction);
+  const dreams: Dream[] = load<Dream>("dreams") as Dream[];
 
-  dreamList.replaceChildren(...dreams.map(buildListItem));
+  if (dreams) {
+    dreamList.addEventListener("click", handleDreamInteraction);
+    dreamList.replaceChildren(...dreams.map(buildListItem));
+  } else {
+    const text = document.createElement("p");
+    text.textContent = "Vi hittade inga drömmar."
+    dreamList.replaceChildren(text);
+  }
 }
 
 function handleDreamInteraction(event: Event) {
@@ -42,25 +47,21 @@ function handleDreamInteraction(event: Event) {
 
 
 function handleDeleteDream(id: number) {
-  const dreams: Dreams = getDreams();
-  const newDreams = dreams.filter((dream) => dream.id !== id);
-  storeDreams(newDreams);
+  remove('dreams', id);
   renderDreamList();
 }
 
 function handleToggleDream(id: number) {
-  const dreams: Dreams = getDreams();
+  const dreams: Dream[] = load<Dream>("dreams") as Dream[];
   const dream = dreams.find((dream) => dream.id === id);
   if (!dream) return;
   dream.checked = !dream.checked;
-  storeDreams(dreams);
+  save('dreams', dream);
   renderDreamList();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const user = getUser();
-  const userField = elementNullCheck<HTMLSpanElement>("#user-name");
-  userField.textContent = user;
-
+  checkLoggedInUser();
+  setDisplayName(getHTMLElement<HTMLSpanElement>("#user-name"));
   renderDreamList();
 });
