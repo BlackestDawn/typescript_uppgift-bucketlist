@@ -45,15 +45,13 @@ function handleDreamInteraction(event: Event) {
   }
 }
 
-
 function handleDeleteDream(id: number) {
   remove('dreams', id);
   renderDreamList();
 }
 
 function handleToggleDream(id: number) {
-  const dreams: Dream[] = load<Dream>("dreams") as Dream[];
-  const dream = dreams.find((dream) => dream.id === id);
+  const dream: Dream = load<Dream>("dreams", id) as Dream;
   if (!dream) return;
   dream.checked = !dream.checked;
   save('dreams', dream);
