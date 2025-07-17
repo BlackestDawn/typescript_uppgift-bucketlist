@@ -6,9 +6,7 @@ import { checkLoggedInUser, setDisplayName, getNewId, getCurrentUserId, logoutUs
 import { Theme, User } from "../models/types.js";
 
 window.addEventListener('DOMContentLoaded', () => {
-
   checkLoggedInUser();
-  setDisplayName(getHTMLElement<HTMLSpanElement>("#user-name"));
 
   const changeUsernameButton = getHTMLElement<HTMLButtonElement>("#change-username");
   changeUsernameButton.addEventListener("click", handlerChangeUsername);
