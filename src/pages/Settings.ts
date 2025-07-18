@@ -1,9 +1,14 @@
 // här är det bara level-up!
 import { defaultThemes } from "../models/variables.js";
-import { save, load, remove } from "../utils/storage.js";
+import { Storage } from "../utils/storage.js";
 import { getHTMLElement } from "../utils/domHelpers.js";
-import { checkLoggedInUser, setDisplayName, getNewId, getCurrentUserId, logoutUser } from "../utils/helpers.js";
+import { checkLoggedInUser, getCurrentUserId, logoutUser } from "../utils/helpers.js";
 import { Theme, User } from "../models/types.js";
+
+const {save: saveThemes, load: loadThemes, remove: removeThemes, getNewId: getNewIdThemes} = Storage<Theme>("themes");
+const {save: saveUsers, load: loadUsers} = Storage<User>("users");
+
+
 
 window.addEventListener('DOMContentLoaded', () => {
   checkLoggedInUser();
@@ -22,7 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function renderThemeList() {
   const themeList = getHTMLElement<HTMLUListElement>("#theme-list");
-  const themes = load<Theme>("themes") as Theme[] || defaultThemes;
+  const themes = loadThemes() as Theme[] || defaultThemes;
 
   themeList.replaceChildren(...themes.map((theme) => {
     const li = document.createElement("li");
@@ -37,28 +42,25 @@ logOutBtn?.addEventListener("click", logOut);
 
 function logOut(): void {
   logoutUser();
-  window.location.replace('login.html');
+  window.location.href = 'login.html';
 };
 
 function handlerChangeUsername(): void {
-  const oldUser = load<User>("users", getCurrentUserId()) as User;
+  const user = loadUsers(getCurrentUserId()) as User;
   const newUsername = getHTMLElement<HTMLInputElement>("#name-input").value;
-  if (newUsername === oldUser.username) return;
-  oldUser.username = newUsername;
-  save('users', oldUser);
+  if (newUsername === user.username) return;
+  user.username = newUsername;
+  saveUsers(user);
   window.location.reload();
 }
 
 function handlerAddTheme(): void {
   const newThemeName = getHTMLElement<HTMLInputElement>("#theme-input").value;
   if (!newThemeName) return;
-  const themes = load<Theme>("themes") as Theme[];
-  const highestId = getNewId<Theme>("themes");
-  const newTheme: Theme = {
-    id: highestId + 1,
+  saveThemes({
+    id: getNewIdThemes(),
     name: newThemeName
-  };
-  save('themes', newTheme);
+  });
   renderThemeList();
 }
 
@@ -68,6 +70,6 @@ function handlerDeleteTheme(event: Event): void {
   if (!button) return;
   const index = parseInt(button.id.split("-")[1]);
   if (isNaN(index)) return;
-  remove('themes', index);
+  removeThemes(index);
   renderThemeList();
 }

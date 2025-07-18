@@ -1,7 +1,5 @@
 export type ItemWithId = { id: number };
 
-export type StorageTypes = "users" | "dreams" | "themes";
-
 export interface Dream {
     id: number,
     name: string,

@@ -1,9 +1,12 @@
 import { getHTMLElement } from "../utils/domHelpers.js";
 import { Dream, Theme } from "../models/types.js";
-import { save, load } from "../utils/storage.js";
+import { Storage } from "../utils/storage.js";
 import { defaultThemeOption, defaultThemes } from "../models/variables.js";
 import { showExisting } from "../utils/notification.js";
-import { checkLoggedInUser, setDisplayName, getNewId } from "../utils/helpers.js";
+import { checkLoggedInUser, setDisplayName } from "../utils/helpers.js";
+
+const {save: saveDreams, getNewId: getNewIdDreams} = Storage<Dream>("dreams");
+const {load: loadThemes} = Storage<Theme>("themes");
 
 window.addEventListener('DOMContentLoaded', () => {
   checkLoggedInUser();
@@ -17,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function populateThemeSelection() {
   const themeSelection = getHTMLElement<HTMLSelectElement>("#dream-select");
-  const themes = load<Theme>("themes") as Theme[] || defaultThemes;
+  const themes = loadThemes() as Theme[] || defaultThemes;
   const topOption = document.createElement("option");
   topOption.value = "";
   topOption.text = defaultThemeOption;
@@ -44,14 +47,13 @@ function handleAddDream() {
     return;
   }
 
-  const highestId = getNewId<Dream>("dreams");
   const newDream: Dream = {
-    id: highestId + 1,
+    id: getNewIdDreams(),
     name: dreamName,
     themeId: parseInt(dreamTheme),
     checked: false
   };
-  save('dreams', newDream);
+  saveDreams(newDream);
   window.location.href = "dashboard.html";
 }
 

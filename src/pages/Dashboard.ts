@@ -1,15 +1,18 @@
 import { checkLoggedInUser, setDisplayName } from "../utils/helpers.js";
 import { getHTMLElement } from "../utils/domHelpers.js";
 import { Dream, Theme } from "../models/types.js";
-import { save, load, remove } from "../utils/storage.js";
+import { Storage } from "../utils/storage.js";
+
+const {save: saveDreams, load: loadDreams, remove: removeDreams} = Storage<Dream>("dreams");
+const {load: loadThemes} = Storage<Theme>("themes");
 
 function buildListItem(dream: Dream) {
   const item = document.createElement("li");
   item.classList.add("dream-list_item");
-  const theme = load<Theme>('themes', dream.themeId) as Theme;
+  const theme = loadThemes(dream.themeId) as Theme;
   item.innerHTML = `
     <input class="dream-check" type="checkbox" name="dream-check" id="dream-check-${dream.id}" ${dream.checked ? "checked" : ""}>
-    <label for="dream-check-${dream.id}">${dream.name}, <span class="dream-theme">${theme.name || "Unknown dream type"}</span></label>
+    <label for="dream-check-${dream.id}">${dream.name}, <span class="dream-theme">${theme ? theme.name : "Okänt dröm tema"}</span></label>
     <button type="button" id="dream-delete-${dream.id}"><img src="../assets/images/trash_delete.png"></button>
     `;
 
@@ -19,7 +22,9 @@ function buildListItem(dream: Dream) {
 function renderDreamList() {
   const dreamList = getHTMLElement<HTMLUListElement>(".dream-list");
   if (!dreamList) return;
-  const dreams: Dream[] = load<Dream>("dreams") as Dream[];
+  const dreams: Dream[] = loadDreams() as Dream[];
+  console.log(`Dreams: ${JSON.stringify(dreams)}`);
+
 
   if (dreams) {
     dreamList.addEventListener("click", handleDreamInteraction);
@@ -46,15 +51,15 @@ function handleDreamInteraction(event: Event) {
 }
 
 function handleDeleteDream(id: number) {
-  remove('dreams', id);
+  removeDreams(id);
   renderDreamList();
 }
 
 function handleToggleDream(id: number) {
-  const dream: Dream = load<Dream>("dreams", id) as Dream;
+  const dream: Dream = loadDreams(id) as Dream;
   if (!dream) return;
   dream.checked = !dream.checked;
-  save('dreams', dream);
+  saveDreams(dream);
   renderDreamList();
 }
 

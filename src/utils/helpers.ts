@@ -1,6 +1,5 @@
 import { User } from "../models/types.js";
-import { load } from "./storage.js";
-import { ItemWithId, StorageTypes } from "../models/types.js";
+import { Storage } from "./storage.js";
 
 export function getCurrentUserId() {
   let data;
@@ -27,36 +26,23 @@ export function logoutUser() {
 
 export function getUserByUsername(username: string) {
   const data = localStorage.getItem("users");
-
   if (!data) return null;
-  const users: User[] = JSON.parse(data);
-
+  const users = JSON.parse(data) as User[];
   if (!users) return null;
   return users.find(user => user.username === username) || null;
-}
-
-export function getNewId<T extends ItemWithId>(key: StorageTypes): number {
-  const data = load<T>(key) as T[];
-  if (!data) return 0;
-  return data.reduce((max, item) => Math.max(max, item.id), 0);
 }
 
 export function checkLoggedInUser() {
   const currentUser = getCurrentUserId();
   const pageName: string = window.location.pathname.split('/').pop() || '';
-  if (pageName === 'login.html' || pageName === 'index.html' || pageName === '') {
-    if (currentUser) {
-      window.location.href = "dashboard.html";
-    }
-    return;
-  }
-
-  if (!currentUser && pageName !== 'login.html') {
-    window.location.href = "login.html";
+  if (currentUser) {
+    if (pageName === 'login.html' || pageName === 'index.html' || pageName === '') window.location.href = "dashboard.html";
+  } else {
+    if (pageName !== 'login.html') window.location.href = "login.html";
   }
 }
 
 export function setDisplayName(element: HTMLElement) {
-  const user = load<User>("users", getCurrentUserId()) as User;
+  const user = Storage<User>("users").load(getCurrentUserId()) as User;
   element.textContent = user.username;
 }

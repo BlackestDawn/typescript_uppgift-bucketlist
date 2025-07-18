@@ -5,6 +5,5 @@ import { checkLoggedInUser } from "../utils/helpers.js";
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     checkLoggedInUser();
-    window.location.href = 'login.html';
   }, 4000); // 4000 ms = 4 sekunder
 });

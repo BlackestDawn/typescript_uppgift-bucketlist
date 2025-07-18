@@ -1,10 +1,13 @@
 import { getHTMLElement } from "../utils/domHelpers.js"
 import { validateUser } from "../utils/validation.js"
-import { save } from "../utils/storage.js"
-import { setCurrentUserId, getUserByUsername, getNewId, checkLoggedInUser } from "../utils/helpers.js";
+import { Storage } from "../utils/storage.js"
+import { setCurrentUserId, getUserByUsername, checkLoggedInUser } from "../utils/helpers.js";
 import { showExisting } from "../utils/notification.js";
-import { User, InvalidUsernameError, InvalidPasswordError, InvalidCredentialsError } from "../models/types.js";
+import { User, InvalidUsernameError, InvalidPasswordError, InvalidCredentialsError, Theme } from "../models/types.js";
 import { defaultThemes } from "../models/variables.js";
+
+const {save: saveUsers, getNewId: getNewIdUsers} = Storage<User>("users");
+const {save: saveThemes} = Storage<Theme>("themes");
 
 const loginButton = getHTMLElement<HTMLButtonElement>("#login");
 loginButton.addEventListener("click", () => {
@@ -18,10 +21,8 @@ loginButton.addEventListener("click", () => {
   const remember = rememberInput.checked;
 
   const existingUser = getUserByUsername(username);
-  const newId = getNewId<User>("users");
-
   const user: User = {
-    id: existingUser ? existingUser.id : newId + 1,
+    id: existingUser ? existingUser.id : getNewIdUsers(),
     username,
     password
   };
@@ -29,8 +30,8 @@ loginButton.addEventListener("click", () => {
   try {
     validateUser(user, existingUser);
     setCurrentUserId(user, remember);
-    save('users', user);
-    if (!existingUser) save('themes', defaultThemes);
+    saveUsers(user);
+    if (!existingUser) saveThemes(defaultThemes);
     window.location.href = "dashboard.html";
   } catch (error) {
     if (error instanceof InvalidUsernameError) {
