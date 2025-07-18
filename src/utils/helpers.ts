@@ -12,7 +12,7 @@ export function getCurrentUserId() {
   return parseInt(data || '');
 }
 
-export function setCurrentUser(user: User, remember: boolean) {
+export function setCurrentUserId(user: User, remember: boolean) {
   if (remember) {
     localStorage.setItem("currentUser", user.id.toString());
   } else {

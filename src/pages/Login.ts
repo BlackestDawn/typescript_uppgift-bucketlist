@@ -1,7 +1,7 @@
 import { getHTMLElement } from "../utils/domHelpers.js"
 import { validateUser } from "../utils/validation.js"
 import { save } from "../utils/storage.js"
-import { setCurrentUser, getUserByUsername, getNewId, checkLoggedInUser } from "../utils/helpers.js";
+import { setCurrentUserId, getUserByUsername, getNewId, checkLoggedInUser } from "../utils/helpers.js";
 import { showExisting } from "../utils/notification.js";
 import { User, InvalidUsernameError, InvalidPasswordError, InvalidCredentialsError } from "../models/types.js";
 import { defaultThemes } from "../models/variables.js";
@@ -28,7 +28,7 @@ loginButton.addEventListener("click", () => {
 
   try {
     validateUser(user, existingUser);
-    setCurrentUser(user, remember);
+    setCurrentUserId(user, remember);
     save('users', user);
     if (!existingUser) save('themes', defaultThemes);
     window.location.href = "dashboard.html";
